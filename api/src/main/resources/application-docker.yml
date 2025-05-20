@@ -1,0 +1,12 @@
+server:
+  port: ${SERVER_PORT:8087}
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
