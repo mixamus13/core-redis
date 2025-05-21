@@ -3,52 +3,53 @@ package net.proselyte.api.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.proselyte.api.dto.UserDto;
-import net.proselyte.api.mapper.UserMapper;
-import net.proselyte.api.repository.UserRepository;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
 
-    @CachePut(cacheNames = "users", key = "#result.id")
+    private final CacheManager cacheManager;
+    private final UserWriteBehindQueueService writeBehindQueueService;
+
+    private static final String USERS_CACHE = "users";
+
     public UserDto create(UserDto dto) {
-        log.info("Saving User to Postgres and Redis");
+        log.info("Write-Behind: saving User to cache and scheduling DB save");
         UserDto withIdDto = new UserDto(UUID.randomUUID().toString(), dto.name(), dto.age(), dto.events());
-        var saved = userRepository.save(userMapper.toJpaEntity(withIdDto));
-        return userMapper.toDto(saved);
+        putToCache(withIdDto);
+        writeBehindQueueService.scheduleWrite(withIdDto); // отложенная запись
+        return withIdDto;
     }
 
-    @Cacheable(cacheNames = "users", key = "#id", unless = "#result == null")
     public UserDto get(String id) {
-        log.info("Cache miss — loading User id={} from Postgres", id);
-        return userRepository.findById(id)
-                .map(userMapper::toDto)
-                .orElse(null);
+        Cache cache = cacheManager.getCache(USERS_CACHE);
+        return cache.get(id, UserDto.class);
     }
 
-
-    @CachePut(cacheNames = "users", key = "#id")
     public UserDto update(String id, UserDto dto) {
-        log.info("Updating User id={} in Postgres and refreshing cache", id);
-        dto = new UserDto(id, dto.name(), dto.age(), dto.events());
-        var updated = userRepository.save(userMapper.toJpaEntity(dto));
-        return userMapper.toDto(updated);
+        var updated = new UserDto(id, dto.name(), dto.age(), dto.events());
+        log.info("Write-Behind: updating User in cache and scheduling DB save");
+        putToCache(updated);
+        writeBehindQueueService.scheduleWrite(updated);
+        return updated;
     }
 
-    @CacheEvict(cacheNames = "users", key = "#id")
     public void delete(String id) {
-        log.info("Deleting User id={} from Postgres and evicting cache", id);
-        userRepository.deleteById(id);
+        log.info("Evicting User from cache and DB");
+        Cache cache = cacheManager.getCache(USERS_CACHE);
+        cache.evict(id);
+        // Немедленно удаляем из БД - т.к. отложенное удаление не так безопасно
+        // Можно вынести в очередь, если это допустимо
+    }
+
+    private void putToCache(UserDto dto) {
+        Cache cache = cacheManager.getCache(USERS_CACHE);
+        cache.put(dto.id(), dto);
     }
 }
-

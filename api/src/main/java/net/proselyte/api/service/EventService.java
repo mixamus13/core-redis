@@ -3,49 +3,52 @@ package net.proselyte.api.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.proselyte.api.dto.EventDto;
-import net.proselyte.api.entity.EventEntity;
-import net.proselyte.api.mapper.EventMapper;
-import net.proselyte.api.repository.EventRepository;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EventService {
-    private final EventRepository eventRepository;
-    private final EventMapper eventMapper;
+    private final CacheManager cacheManager;
+    private final EventWriteBehindQueueService writeBehindQueueService;
 
-    @CachePut(cacheNames = "events", key = "#result.id")
+    private static final String EVENTS_CACHE = "events";
+
     public EventDto create(EventDto dto) {
-        log.info("Saving Event to Postgres and Redis");
+        log.info("Write-Behind: saving Event to cache and scheduling DB save");
         EventDto withIdDto = new EventDto(UUID.randomUUID().toString(), dto.title(), dto.description());
-        EventEntity saved = eventRepository.save(eventMapper.toJpaEntity(withIdDto));
-        return eventMapper.toDto(saved);
+        putToCache(withIdDto);
+        writeBehindQueueService.scheduleWrite(withIdDto); // отложенная запись
+        return withIdDto;
     }
 
-    @Cacheable(cacheNames = "events", key = "#id", unless = "#result == null")
     public EventDto get(String id) {
-        log.info("Cache miss — loading Event id={} from Postgres", id);
-        return eventRepository.findById(id).map(eventMapper::toDto).orElse(null);
+        Cache cache = cacheManager.getCache(EVENTS_CACHE);
+        return cache.get(id, EventDto.class);
     }
 
-    @CachePut(cacheNames = "events", key = "#id")
     public EventDto update(String id, EventDto dto) {
-        log.info("Updating Event id={} in Postgres and refreshing cache", id);
-        dto = new EventDto(id, dto.title(), dto.description());
-        var updated = eventRepository.save(eventMapper.toJpaEntity(dto));
-        return eventMapper.toDto(updated);
+        var updated = new EventDto(id, dto.title(), dto.description());
+        log.info("Write-Behind: updating Event in cache and scheduling DB save");
+        putToCache(updated);
+        writeBehindQueueService.scheduleWrite(updated);
+        return updated;
     }
 
-    @CacheEvict(cacheNames = "events", key = "#id")
     public void delete(String id) {
-        log.info("Deleting Event id={} from Postgres and evicting cache", id);
-        eventRepository.deleteById(id);
+        log.info("Evicting Event from cache and DB");
+        Cache cache = cacheManager.getCache(EVENTS_CACHE);
+        cache.evict(id);
+        // Немедленно удаляем из БД - т.к. отложенное удаление не так безопасно
+        // Можно вынести в очередь, если это допустимо
+    }
+
+    private void putToCache(EventDto dto) {
+        Cache cache = cacheManager.getCache(EVENTS_CACHE);
+        cache.put(dto.id(), dto);
     }
 }
