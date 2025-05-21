@@ -1,3 +1,4 @@
+// EventEntity.java
 package net.proselyte.api.entity;
 
 import jakarta.persistence.Entity;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EventJpaEntity {
+public class EventEntity {
     @Id
     private String id;
     private String title;

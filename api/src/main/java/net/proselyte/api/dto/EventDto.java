@@ -1,3 +1,5 @@
 package net.proselyte.api.dto;
 
-public record EventDto(String id, String title, String description) {}
+import java.io.Serializable;
+
+public record EventDto(String id, String title, String description) implements Serializable {}
