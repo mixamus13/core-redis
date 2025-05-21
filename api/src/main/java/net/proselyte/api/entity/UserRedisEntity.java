@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User implements Serializable {
+public class UserRedisEntity implements Serializable {
     @Id
     private String id;
     private String name;

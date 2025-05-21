@@ -12,6 +12,9 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/proselyte_redis_course
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
     networks:
       - proselyte-redis-net
   redis:
@@ -19,6 +22,20 @@ services:
     container_name: proselyte-redis
     ports:
       - "6379:6379"
+    networks:
+      - proselyte-redis-net
+
+  postgres:
+    image: postgres:latest
+    container_name: proselyte-postgres
+    environment:
+      POSTGRES_DB: proselyte_redis_course
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     networks:
       - proselyte-redis-net
 
@@ -37,7 +54,7 @@ services:
 
 volumes:
   redis-insight:
-
+  pgdata:
 
 networks:
   proselyte-redis-net:

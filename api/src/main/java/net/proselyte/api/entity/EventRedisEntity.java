@@ -11,7 +11,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Event implements Serializable {
+public class EventRedisEntity implements Serializable {
     @Id
     private String id;
     private String title;

@@ -5,8 +5,24 @@ spring:
   config:
     activate:
       on-profile: default
-
   data:
     redis:
       host: localhost
       port: 6379
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/proselyte_redis_course
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
