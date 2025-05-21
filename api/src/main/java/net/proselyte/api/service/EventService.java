@@ -21,6 +21,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
 
+    @CachePut(cacheNames = "events", key = "#result.id")
     public EventDto create(EventDto dto) {
         log.info("Saving Event to Postgres and Redis");
         EventDto withIdDto = new EventDto(UUID.randomUUID().toString(), dto.title(), dto.description());

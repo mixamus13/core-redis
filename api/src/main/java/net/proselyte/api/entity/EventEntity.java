@@ -1,4 +1,3 @@
-// EventEntity.java
 package net.proselyte.api.entity;
 
 import jakarta.persistence.Entity;

@@ -20,6 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    @CachePut(cacheNames = "users", key = "#result.id")
     public UserDto create(UserDto dto) {
         log.info("Saving User to Postgres and Redis");
         UserDto withIdDto = new UserDto(UUID.randomUUID().toString(), dto.name(), dto.age(), dto.events());
