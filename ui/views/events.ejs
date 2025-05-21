@@ -1,0 +1,7 @@
+<h2>События</h2>
+<a href="/events/new">Создать событие</a>
+<ul>
+  <% events.forEach(event => { %>
+    <li><%= event.title %>: <%= event.description %></li>
+  <% }) %>
+</ul>

@@ -5,8 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.proselyte.api.dto.UserDto;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -16,6 +19,8 @@ public class UserService {
 
     private final CacheManager cacheManager;
     private final UserWriteBehindQueueService writeBehindQueueService;
+    private final RedisTemplate<String, Object> redisTemplate;
+
 
     private static final String USERS_CACHE = "users";
 
@@ -30,6 +35,18 @@ public class UserService {
     public UserDto get(String id) {
         Cache cache = cacheManager.getCache(USERS_CACHE);
         return cache.get(id, UserDto.class);
+    }
+
+    public List<UserDto> getAll() {
+        String pattern = USERS_CACHE + "::*";
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (keys == null || keys.isEmpty()) return List.of();
+
+        List<Object> rawValues = redisTemplate.opsForValue().multiGet(keys);
+        return rawValues.stream()
+                .filter(UserDto.class::isInstance)
+                .map(UserDto.class::cast)
+                .toList();
     }
 
     public UserDto update(String id, UserDto dto) {

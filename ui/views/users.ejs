@@ -1,0 +1,7 @@
+<h2>Пользователи</h2>
+<a href="/users/new">Создать нового</a>
+<ul>
+  <% users.forEach(user => { %>
+    <li><%= user.name %> (age: <%= user.age %>, events: <%= user.events?.length || 0 %>)</li>
+  <% }) %>
+</ul>

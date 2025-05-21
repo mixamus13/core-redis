@@ -52,6 +52,21 @@ services:
     networks:
       - proselyte-redis-net
 
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: proselyte-redis-ui
+    ports:
+      - "3000:3000"
+    environment:
+      - API_BASE=http://proselyte-redis-api:8087/api/v1
+      - REDIS_URL=redis://proselyte-redis:6379
+    depends_on:
+      - api
+    networks:
+      - proselyte-redis-net
+
 volumes:
   redis-insight:
   pgdata:
