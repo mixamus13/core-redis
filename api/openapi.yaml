@@ -1,30 +1,27 @@
 openapi: 3.0.3
 info:
-  title: Redis User & Event API
-  version: "1.0.0"
-  description: REST API для управления пользователями и учебными событиями
-
+  title: Proselyte Redis Course API
+  version: 1.0.0
 paths:
-  /api/v1/users:
-    post:
-      summary: Создать пользователя
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserDto"
-      responses:
-        '200':
-          description: Успешно создано
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserDto"
-
+/api/v1/users:
+  get:
+    summary: Get all users
+    responses:
+      '200':
+        description: List of users
+  post:
+    summary: Create user
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserDto'
+    responses:
+      '200':
+        description: User created
   /api/v1/users/{id}:
     get:
-      summary: Получить пользователя по ID
+      summary: Get user by ID
       parameters:
         - name: id
           in: path
@@ -33,15 +30,9 @@ paths:
             type: string
       responses:
         '200':
-          description: Найдено
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserDto"
-        '404':
-          description: Не найдено
+          description: User found
     put:
-      summary: Обновить пользователя
+      summary: Update user
       parameters:
         - name: id
           in: path
@@ -49,20 +40,15 @@ paths:
           schema:
             type: string
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserDto"
+              $ref: '#/components/schemas/UserDto'
       responses:
         '200':
-          description: Обновлено
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserDto"
+          description: User updated
     delete:
-      summary: Удалить пользователя
+      summary: Delete user
       parameters:
         - name: id
           in: path
@@ -71,28 +57,98 @@ paths:
             type: string
       responses:
         '204':
-          description: Удалено
-
-  /api/v1/events:
+          description: User deleted
+  /api/v1/users/{id}/visit:
     post:
-      summary: Создать событие
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/EventDto"
+      summary: Increment visit (unsafe)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: Успешно создано
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EventDto"
-
+          description: Visit incremented
+  /api/v1/users/{id}/visit-incr:
+    post:
+      summary: Increment visit with INCR
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Visit incremented
+  /api/v1/users/{id}/visit-watch:
+    post:
+      summary: Increment visit with WATCH
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Visit incremented
+  /api/v1/users/{id}/visit-lock:
+    post:
+      summary: Increment visit with lock
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Visit incremented
+  /api/v1/users/{id}/save-json:
+    post:
+      summary: Save user to RedisJSON
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Saved
+  /api/v1/users/{id}/json:
+    get:
+      summary: Get user from RedisJSON
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Found
+/api/v1/events:
+  get:
+    summary: Get all events
+    responses:
+      '200':
+        description: List of events
+  post:
+    summary: Create event
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EventDto'
+    responses:
+      '200':
+        description: Event created
   /api/v1/events/{id}:
     get:
-      summary: Получить событие по ID
+      summary: Get event by ID
       parameters:
         - name: id
           in: path
@@ -101,15 +157,9 @@ paths:
             type: string
       responses:
         '200':
-          description: Найдено
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EventDto"
-        '404':
-          description: Не найдено
+          description: Event found
     put:
-      summary: Обновить событие
+      summary: Update event
       parameters:
         - name: id
           in: path
@@ -117,20 +167,15 @@ paths:
           schema:
             type: string
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/EventDto"
+              $ref: '#/components/schemas/EventDto'
       responses:
         '200':
-          description: Обновлено
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EventDto"
+          description: Event updated
     delete:
-      summary: Удалить событие
+      summary: Delete event
       parameters:
         - name: id
           in: path
@@ -139,10 +184,18 @@ paths:
             type: string
       responses:
         '204':
-          description: Удалено
-
+          description: Event deleted
 components:
   schemas:
+    EventDto:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
     UserDto:
       type: object
       properties:
@@ -155,13 +208,4 @@ components:
         events:
           type: array
           items:
-            type: string
-    EventDto:
-      type: object
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-        description:
-          type: string
+            $ref: '#/components/schemas/EventDto'
