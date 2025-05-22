@@ -1,15 +1,23 @@
 package net.proselyte.api.service;
 
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.TransactionResult;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.proselyte.api.dto.UserDto;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import net.proselyte.api.mapper.UserMapper;
+import net.proselyte.api.repository.UserRepository;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -17,56 +25,115 @@ import java.util.UUID;
 @Slf4j
 public class UserService {
 
-    private final CacheManager cacheManager;
-    private final UserWriteBehindQueueService writeBehindQueueService;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
+    private final RedisTemplate<String, String> redisTemplate;
+    private final RedissonClient redissonClient;
+    private final RedisClient redisClient;
 
-    private static final String USERS_CACHE = "users";
-
+    @CachePut(cacheNames = "users", key = "#result.id")
     public UserDto create(UserDto dto) {
-        log.info("Write-Behind: saving User to cache and scheduling DB save");
-        UserDto withIdDto = new UserDto(UUID.randomUUID().toString(), dto.name(), dto.age(), dto.events());
-        putToCache(withIdDto);
-        writeBehindQueueService.scheduleWrite(withIdDto); // отложенная запись
-        return withIdDto;
+        log.info("Saving User to Postgres and cache");
+        var dtoWithId = new UserDto(UUID.randomUUID().toString(), dto.name(), dto.age(), dto.events());
+        var saved = userRepository.save(userMapper.toJpaEntity(dtoWithId));
+        return userMapper.toDto(saved);
     }
 
+    @Cacheable(cacheNames = "users", key = "#id", unless = "#result == null")
     public UserDto get(String id) {
-        Cache cache = cacheManager.getCache(USERS_CACHE);
-        return cache.get(id, UserDto.class);
+        log.info("Cache miss — loading User id={} from Postgres", id);
+        return userRepository.findById(id)
+                .map(userMapper::toDto)
+                .orElse(null);
+    }
+
+    @CachePut(cacheNames = "users", key = "#id")
+    public UserDto update(String id, UserDto dto) {
+        log.info("Updating User id={} in Postgres and refreshing cache", id);
+        dto = new UserDto(id, dto.name(), dto.age(), dto.events());
+        var updated = userRepository.save(userMapper.toJpaEntity(dto));
+        return userMapper.toDto(updated);
+    }
+
+    @CacheEvict(cacheNames = "users", key = "#id")
+    public void delete(String id) {
+        log.info("Deleting User id={} from Postgres and evicting cache", id);
+        userRepository.deleteById(id);
+    }
+    public void incrementVisitUnsafe(String userId) {
+        String key = "user:visits:" + userId;
+        String current = redisTemplate.opsForValue().get(key);
+
+        int count = 0;
+        try {
+            count = Integer.parseInt(current);
+        } catch (NumberFormatException e) {
+            log.warn("Corrupted counter for {} → '{}', resetting to 0", userId, current);
+        }
+
+        count++;
+        redisTemplate.opsForValue().set(key, String.valueOf(count));
+        log.info("Unsafe increment for {} → {}", userId, count);
+    }
+
+    public void incrementWithWatch(String userId) {
+        try (StatefulRedisConnection<String, String> conn = redisClient.connect()) {
+            RedisCommands<String, String> sync = conn.sync();
+            String key = "user:visits:" + userId;
+
+            while (true) {
+                try {
+                    sync.watch(key);
+                    String val = sync.get(key);
+                    int newVal = val == null ? 1 : Integer.parseInt(val) + 1;
+
+                    sync.multi();
+                    sync.set(key, String.valueOf(newVal));
+                    TransactionResult result = sync.exec();
+
+                    if (result.wasDiscarded()) {
+                        log.warn("WATCH conflict for key {}, retrying...", key);
+                        continue;
+                    }
+
+                    log.info("WATCH: {} = {}", key, newVal);
+                    break;
+                } catch (Exception e) {
+                    log.error("WATCH error for {}: {}", key, e.getMessage());
+                    break;
+                } finally {
+                    sync.unwatch();
+                }
+            }
+        }
+    }
+
+    public void incrementWithLock(String userId) {
+        String key = "user:visits:" + userId;
+        RLock lock = redissonClient.getLock("lock:" + key);
+        try {
+            lock.lock();
+            String val = redisTemplate.opsForValue().get(key);
+            int newVal = Integer.parseInt(val) + 1;
+            redisTemplate.opsForValue().set(key, String.valueOf(newVal));
+            log.info("LOCK: {} = {}", key, newVal);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void incrementVisitWithIncr(String userId) {
+        String key = "user:visits:" + userId;
+        Long newValue = redisTemplate.opsForValue().increment(key);
+        log.info("INCR → {} = {}", key, newValue);
     }
 
     public List<UserDto> getAll() {
-        String pattern = USERS_CACHE + "::*";
-        Set<String> keys = redisTemplate.keys(pattern);
-        if (keys == null || keys.isEmpty()) return List.of();
-
-        List<Object> rawValues = redisTemplate.opsForValue().multiGet(keys);
-        return rawValues.stream()
-                .filter(UserDto.class::isInstance)
-                .map(UserDto.class::cast)
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toDto)
                 .toList();
     }
 
-    public UserDto update(String id, UserDto dto) {
-        var updated = new UserDto(id, dto.name(), dto.age(), dto.events());
-        log.info("Write-Behind: updating User in cache and scheduling DB save");
-        putToCache(updated);
-        writeBehindQueueService.scheduleWrite(updated);
-        return updated;
-    }
-
-    public void delete(String id) {
-        log.info("Evicting User from cache and DB");
-        Cache cache = cacheManager.getCache(USERS_CACHE);
-        cache.evict(id);
-        // Немедленно удаляем из БД - т.к. отложенное удаление не так безопасно
-        // Можно вынести в очередь, если это допустимо
-    }
-
-    private void putToCache(UserDto dto) {
-        Cache cache = cacheManager.getCache(USERS_CACHE);
-        cache.put(dto.id(), dto);
-    }
 }

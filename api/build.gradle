@@ -26,6 +26,9 @@ dependencies {
     implementation 'org.flywaydb:flyway-database-postgresql'
     runtimeOnly 'org.postgresql:postgresql'
 
+    implementation "org.redisson:redisson-spring-boot-starter:$redissonVersion"
+
+
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "org.projectlombok:lombok"
     annotationProcessor "org.projectlombok:lombok"
