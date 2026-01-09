@@ -11,7 +11,7 @@ spring:
       port: 6379
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/core_redis
+    url: jdbc:postgresql://localhost:5432/core_redis
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
