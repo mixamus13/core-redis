@@ -11,9 +11,9 @@ spring:
       port: ${REDIS_PORT:6379}
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/proselyte_redis_course}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/core_redis}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
 
   jpa:

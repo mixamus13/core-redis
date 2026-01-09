@@ -1,4 +1,4 @@
-package net.proselyte.api.dto;
+package com.mixamus.api.dto;
 
 import java.io.Serializable;
 

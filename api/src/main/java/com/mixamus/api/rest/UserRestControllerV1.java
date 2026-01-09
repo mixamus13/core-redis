@@ -1,7 +1,7 @@
-package net.proselyte.api.rest;
+package com.mixamus.api.rest;
 
-import net.proselyte.api.dto.UserDto;
-import net.proselyte.api.service.UserService;
+import com.mixamus.api.dto.UserDto;
+import com.mixamus.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

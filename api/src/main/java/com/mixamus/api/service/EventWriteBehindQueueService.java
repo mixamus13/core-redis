@@ -1,10 +1,10 @@
-package net.proselyte.api.service;
+package com.mixamus.api.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.proselyte.api.dto.EventDto;
-import net.proselyte.api.mapper.EventMapper;
-import net.proselyte.api.repository.EventRepository;
+import com.mixamus.api.dto.EventDto;
+import com.mixamus.api.mapper.EventMapper;
+import com.mixamus.api.repository.EventRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ExecutorService;

@@ -11,9 +11,9 @@ spring:
       port: 6379
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/proselyte_redis_course
+    url: jdbc:postgresql://localhost:5432/core_redis
     username: postgres
-    password: postgres
+    password: password
     driver-class-name: org.postgresql.Driver
 
   jpa:

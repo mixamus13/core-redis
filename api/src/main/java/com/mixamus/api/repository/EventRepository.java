@@ -1,6 +1,6 @@
-package net.proselyte.api.repository;
+package com.mixamus.api.repository;
 
-import net.proselyte.api.entity.EventEntity;
+import com.mixamus.api.entity.EventEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EventRepository extends JpaRepository<EventEntity, String> {

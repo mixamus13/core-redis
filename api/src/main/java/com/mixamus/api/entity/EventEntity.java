@@ -1,4 +1,4 @@
-package net.proselyte.api.entity;
+package com.mixamus.api.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

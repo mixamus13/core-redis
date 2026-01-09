@@ -1,7 +1,7 @@
-package net.proselyte.api.mapper;
+package com.mixamus.api.mapper;
 
-import net.proselyte.api.dto.UserDto;
-import net.proselyte.api.entity.UserEntity;
+import com.mixamus.api.dto.UserDto;
+import com.mixamus.api.entity.UserEntity;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

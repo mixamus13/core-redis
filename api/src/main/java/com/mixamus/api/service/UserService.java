@@ -1,4 +1,4 @@
-package net.proselyte.api.service;
+package com.mixamus.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisClient;
@@ -8,9 +8,9 @@ import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.proselyte.api.dto.UserDto;
-import net.proselyte.api.mapper.UserMapper;
-import net.proselyte.api.repository.UserRepository;
+import com.mixamus.api.dto.UserDto;
+import com.mixamus.api.mapper.UserMapper;
+import com.mixamus.api.repository.UserRepository;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.cache.annotation.CacheEvict;

@@ -1,4 +1,4 @@
-rootProject.name = 'proselyte-redis-course'
+rootProject.name = 'core-redis'
 
 include('api')
 

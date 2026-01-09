@@ -1,4 +1,4 @@
-package net.proselyte.api.config;
+package com.mixamus.api.config;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;

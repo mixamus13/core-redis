@@ -1,9 +1,8 @@
-package net.proselyte.api.rest;
+package com.mixamus.api.rest;
 
-import net.proselyte.api.dto.EventDto;
-import net.proselyte.api.service.EventService;
+import com.mixamus.api.dto.EventDto;
+import com.mixamus.api.service.EventService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

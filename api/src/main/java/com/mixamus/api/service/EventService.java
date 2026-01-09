@@ -1,8 +1,8 @@
-package net.proselyte.api.service;
+package com.mixamus.api.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.proselyte.api.dto.EventDto;
+import com.mixamus.api.dto.EventDto;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.RedisTemplate;
