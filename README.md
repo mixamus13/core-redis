@@ -83,9 +83,9 @@ spring:
     host: redis
     port: 6379
   datasource:
-    url: jdbc:postgresql://postgres:5432/proselyte_redis_course
+    url: jdbc:postgresql://postgres:5433/core_redis
     username: postgres
-    password: postgres
+    password: password
 ```
 
 ## Ветки разработки
@@ -109,8 +109,3 @@ spring:
 * PostgreSQL
 * Docker / Docker Compose
 * Node.js / React (UI)
-
-## Автор
-
-[Eugene Suleimanov](https://github.com/proselytear)
-[Software Engineering](https://t.me/esuleimanov)
