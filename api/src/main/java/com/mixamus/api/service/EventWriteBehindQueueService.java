@@ -23,7 +23,7 @@ public class EventWriteBehindQueueService {
     public void scheduleWrite(EventDto dto) {
         executor.submit(() -> {
             try {
-                Thread.sleep(15_000); // Задержка 15 секунд (в миллисекундах)
+                Thread.sleep(15_000);
                 log.info("Async DB save for Event id={}", dto.id());
                 eventJpaRepository.save(eventMapper.toJpaEntity(dto));
             } catch (InterruptedException e) {
