@@ -23,10 +23,7 @@ import java.time.Duration;
 public class RedisCacheConfig {
 
     @Bean
-    public LettuceConnectionFactory redisConnectionFactory(
-            @Value("${spring.data.redis.host}") String host,
-            @Value("${spring.data.redis.port}") int port
-    ) {
+    public LettuceConnectionFactory redisConnectionFactory(@Value("${spring.data.redis.host}") String host, @Value("${spring.data.redis.port}") int port) {
         return new LettuceConnectionFactory(host, port);
     }
 
@@ -49,19 +46,14 @@ public class RedisCacheConfig {
     }
 
     @Bean
-    public RedissonClient redissonClient(
-            @Value("${spring.data.redis.host}") String host,
-            @Value("${spring.data.redis.port}") int port
-    ) {
+    public RedissonClient redissonClient(@Value("${spring.data.redis.host}") String host, @Value("${spring.data.redis.port}") int port) {
         Config config = new Config();
-        config.useSingleServer()
-                .setAddress("redis://" + host + ":" + port);
+        config.useSingleServer().setAddress("redis://" + host + ":" + port);
         return Redisson.create(config);
     }
 
     @Bean
-    public RedisClient redisClient(@Value("${spring.data.redis.host}") String host,
-                                   @Value("${spring.data.redis.port}") int port) {
+    public RedisClient redisClient(@Value("${spring.data.redis.host}") String host, @Value("${spring.data.redis.port}") int port) {
         return RedisClient.create("redis://" + host + ":" + port);
     }
 

@@ -15,8 +15,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class EventEntity {
+
     @Id
     private String id;
     private String title;
     private String description;
+
 }

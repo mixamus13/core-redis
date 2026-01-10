@@ -16,6 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class UserEntity {
+
     @Id
     private String id;
 
@@ -27,4 +28,5 @@ public class UserEntity {
     @Column(name = "event_id")
     @Builder.Default
     private Set<String> events = new HashSet<>();
+
 }

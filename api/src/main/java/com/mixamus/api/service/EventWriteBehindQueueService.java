@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 @Component
 @RequiredArgsConstructor
 public class EventWriteBehindQueueService {
+
     private final EventRepository eventJpaRepository;
     private final EventMapper eventMapper;
 
@@ -34,6 +35,4 @@ public class EventWriteBehindQueueService {
         });
     }
 
-
 }
-

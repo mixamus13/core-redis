@@ -22,9 +22,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -63,6 +63,7 @@ public class UserService {
         log.info("Deleting User id={} from Postgres and evicting cache", id);
         userRepository.deleteById(id);
     }
+
     public void incrementVisitUnsafe(String userId) {
         String key = "user:visits:" + userId;
         String current = redisTemplate.opsForValue().get(key);

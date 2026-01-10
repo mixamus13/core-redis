@@ -12,10 +12,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class EventService {
+
     private final CacheManager cacheManager;
     private final EventWriteBehindQueueService writeBehindQueueService;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -67,4 +68,5 @@ public class EventService {
         Cache cache = cacheManager.getCache(EVENTS_CACHE);
         cache.put(dto.id(), dto);
     }
+
 }

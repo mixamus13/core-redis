@@ -11,6 +11,7 @@ import java.util.List;
 @RequestMapping("/api/v1/events")
 @RequiredArgsConstructor
 public class EventRestControllerV1 {
+
     private final EventService eventService;
 
     @PostMapping
