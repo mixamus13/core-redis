@@ -88,8 +88,8 @@ public class UserService {
             while (true) {
                 try {
                     sync.watch(key);
-                    String val = sync.get(key);
-                    int newVal = val == null ? 1 : Integer.parseInt(val) + 1;
+                    String value = sync.get(key);
+                    int newVal = value == null ? 1 : Integer.parseInt(value) + 1;
 
                     sync.multi();
                     sync.set(key, String.valueOf(newVal));
@@ -117,8 +117,8 @@ public class UserService {
         RLock lock = redissonClient.getLock("lock:" + key);
         try {
             lock.lock();
-            String val = redisTemplate.opsForValue().get(key);
-            int newVal = Integer.parseInt(val) + 1;
+            String value = redisTemplate.opsForValue().get(key);
+            int newVal = Integer.parseInt(value) + 1;
             redisTemplate.opsForValue().set(key, String.valueOf(newVal));
             log.info("LOCK: {} = {}", key, newVal);
         } finally {
