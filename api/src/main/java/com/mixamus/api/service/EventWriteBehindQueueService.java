@@ -23,12 +23,8 @@ public class EventWriteBehindQueueService {
     public void scheduleWrite(EventDto dto) {
         executor.submit(() -> {
             try {
-                Thread.sleep(15_000);
                 log.info("Async DB save for Event id={}", dto.id());
                 eventJpaRepository.save(eventMapper.toJpaEntity(dto));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.warn("Async write task was interrupted", e);
             } catch (Exception e) {
                 log.error("Failed to save Event to DB", e);
             }
